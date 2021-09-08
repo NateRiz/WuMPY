@@ -160,6 +160,7 @@ class Workspace(QWidget):
     def on_select_monitor(self, monitor):
         self.canvas.set_monitor(monitor)
         self.monitor_label.setText(str(monitor))
+        self.hide_properties()
 
     def on_select_window(self, window):
         self.transform_input.x_input.text_field.setText(str(window.x))
@@ -168,6 +169,7 @@ class Workspace(QWidget):
         self.transform_input.w_input.text_field.setText(str(window.w))
         self.transform_input.h_input.text_field.setText(str(window.h))
         self.target.text_field.setText(str(window.target))
+        self.show_properties()
 
     def on_change_window_property(self, _):
         window = self.monitor_tree.currentItem()
@@ -207,6 +209,14 @@ class Workspace(QWidget):
         for i in range(QDesktopWidget().screenCount()):
             size = QDesktopWidget().screenGeometry(i)
             self.monitors.append(Monitor(f"Monitor {i + 1}", size.width(), size.height()))
+
+    def hide_properties(self):
+        self.transform_input.setHidden(True)
+        self.target.setHidden(True)
+
+    def show_properties(self):
+        self.transform_input.setHidden(False)
+        self.target.setHidden(False)
 
 
 def main():
