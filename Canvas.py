@@ -40,18 +40,24 @@ class Canvas(QLabel):
         painter.drawRect(*self.monitor_dimensions)
 
         windows = sorted([self.monitor.child(i) for i in range(self.monitor.childCount())],
-                         key=lambda window: window.z)
+                         key=lambda window: window.win_z)
         [self._draw_window(window) for window in windows]
 
     def _draw_window(self, window):
         painter = QPainter(self)
         brush = QBrush(QColor(*window.color))
         painter.setBrush(brush)
-        monitor_x, monitor_y, *_ = self.monitor_dimensions
+        monitor_x, monitor_y, monitor_w, monitor_h = self.monitor_dimensions
 
-        x = monitor_x + (window.x // self.scale)
-        y = monitor_y + (window.y // self.scale)
-        w = window.w // self.scale
-        h = window.h // self.scale
+        if window.is_pixel_precision_enabled:
+            x = monitor_x + int(window.win_x / self.scale)
+            y = monitor_y + int(window.win_y / self.scale)
+            w = int(window.win_w / self.scale)
+            h = int(window.win_h / self.scale)
+        else:
+            x = monitor_x + int((window.win_x / 100) * monitor_w)
+            y = monitor_y + int((window.win_y / 100) * monitor_h)
+            w = int((window.win_w / 100) * monitor_w)
+            h = int((window.win_h / 100) * monitor_h)
 
         painter.drawRect(x, y, w, h)

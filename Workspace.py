@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QTreeWidget, QLabel, QPushButton, QDesktopWidget, QMessageBox
+from PyQt5.QtWidgets import QWidget, QGridLayout, QTreeWidget, QLabel, QPushButton, QDesktopWidget, QMessageBox, \
+    QCheckBox
 
 from Canvas import Canvas
 from FileHandler import FileHandler
@@ -51,6 +52,7 @@ class Workspace(QWidget):
         self.transform_input.z_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.w_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.h_input.text_field.textEdited.connect(self.on_change_window_property)
+        self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
         grid.addWidget(self.transform_input, 3, 1, 1, 1)
         self.target = TargetInput()
         self.target.text_field.textChanged.connect(self.on_change_window_property)
@@ -77,22 +79,64 @@ class Workspace(QWidget):
         self.monitor_label.setText(str(monitor))
         self.hide_properties()
 
+    def on_toggle_pixel_precision(self, is_enabled):
+        window = self.monitor_tree.currentItem()
+        if type(window) is not Window:
+            return
+        window.is_pixel_precision_enabled = is_enabled
+        if is_enabled:
+            self.convert_window_to_px()
+        else:
+            self.convert_window_from_px()
+
+    def convert_window_to_px(self):
+        window = self.monitor_tree.currentItem()
+        if type(window) is not Window:
+            return
+        monitor = window.parent()
+        monitor_width = monitor.monitor_width
+        monitor_height = monitor.monitor_height
+        window.win_x = (window.win_x * monitor_width) // 100
+        window.win_y = (window.win_y * monitor_height) // 100
+        window.win_w = (window.win_w * monitor_width) // 100
+        window.win_h = (window.win_h * monitor_height) // 100
+        self.update_text_fields(window)
+
+    def convert_window_from_px(self):
+        window = self.monitor_tree.currentItem()
+        if type(window) is not Window:
+            return
+        monitor = window.parent()
+        monitor_width = monitor.monitor_width
+        monitor_height = monitor.monitor_height
+        window.win_x = int(100 * window.win_x / monitor_width)
+        window.win_y = int(100 * window.win_y / monitor_height)
+        window.win_w = int(100 * window.win_w / monitor_width)
+        window.win_h = int(100 * window.win_h / monitor_height)
+        self.update_text_fields(window)
+
     def on_select_window(self, window):
-        self.transform_input.x_input.text_field.setText(str(window.x))
-        self.transform_input.y_input.text_field.setText(str(window.y))
-        self.transform_input.z_input.text_field.setText(str(window.z))
-        self.transform_input.w_input.text_field.setText(str(window.w))
-        self.transform_input.h_input.text_field.setText(str(window.h))
+        self.update_text_fields(window)
+
+    def update_text_fields(self, window):
+        self.transform_input.x_input.text_field.setText(str(window.win_x))
+        self.transform_input.y_input.text_field.setText(str(window.win_y))
+        self.transform_input.z_input.text_field.setText(str(window.win_z))
+        self.transform_input.w_input.text_field.setText(str(window.win_w))
+        self.transform_input.h_input.text_field.setText(str(window.win_h))
+        check_box = self.transform_input.exact_position_toggle.check_box
+        check_box.toggled.disconnect()
+        check_box.setChecked(window.is_pixel_precision_enabled)
+        check_box.toggled.connect(self.on_toggle_pixel_precision)
         self.target.text_field.setText(str(window.target))
         self.show_properties()
+        self.canvas.update()
 
     def on_change_window_property(self, _):
         window = self.monitor_tree.currentItem()
         if type(window) is not Window:
             return
 
-        x = y = z = w = h = 0
-        target = ""
         try:
             x = int(self.transform_input.x_input.text)
             y = int(self.transform_input.y_input.text)
@@ -100,15 +144,18 @@ class Workspace(QWidget):
             w = int(self.transform_input.w_input.text)
             h = int(self.transform_input.h_input.text)
             target = self.target.text
+            is_pixel_precision_enabled = self.transform_input.exact_position_toggle.check_box.isChecked()
         except ValueError as e:
             print(e)
+            return
 
-        window.x = x
-        window.y = y
-        window.z = z
-        window.w = w
-        window.h = h
+        window.win_x = x
+        window.win_y = y
+        window.win_z = z
+        window.win_w = w
+        window.win_h = h
         window.target = target
+        window.is_pixel_precision_enabled = is_pixel_precision_enabled
         self.canvas.update()
 
     def save(self):

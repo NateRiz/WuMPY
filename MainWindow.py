@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
             return
 
         self.setFixedWidth(1000)
-        self.setFixedHeight(600)
+        self.setFixedHeight(800)
         idx = self.root.addWidget(self.workspace)
         self.root.setCurrentIndex(idx)
 
