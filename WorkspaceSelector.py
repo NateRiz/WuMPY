@@ -15,17 +15,16 @@ class WorkspaceSelector(QWidget):
         self.workspace_list = QListWidget()
         self.workspace_list.itemDoubleClicked.connect(self.load_workspace)
         self.setLayout(self.grid_layout)
-        file_handler = FileHandler()
-        for f in file_handler.get_all_workspaces():
-            self.workspace_list.addItem(LoadableWorkspace(f))
 
         h_layout = QHBoxLayout()
-        load_button = QPushButton(text="Load")
-        load_button.clicked.connect(self.load_workspace)
+        self.load_button = QPushButton(text="Load")
+        self.load_button.clicked.connect(self.load_workspace)
         new_button = QPushButton(text="New")
         new_button.clicked.connect(self.create_new_workspace)
-        h_layout.addWidget(load_button)
+        h_layout.addWidget(self.load_button)
         h_layout.addWidget(new_button)
+
+        self.load_all_workspaces()
 
         self.grid_layout.addWidget(label, 0, 0, 1, 2)
         self.grid_layout.addWidget(self.workspace_list, 1, 0, 1, 2)
@@ -42,3 +41,15 @@ class WorkspaceSelector(QWidget):
         workspace_name = self.workspace_list.currentItem().text()
         file_name = os.path.join(FileHandler().app_data, f"{workspace_name}.wmpy")
         self.open_workspace_callback(file_name, True)
+
+    def load_all_workspaces(self):
+        self.workspace_list.clear()
+        file_handler = FileHandler()
+        for f in file_handler.get_all_workspaces():
+            self.workspace_list.addItem(LoadableWorkspace(f))
+
+        if self.workspace_list.count():
+            self.workspace_list.setCurrentItem(self.workspace_list.item(0))
+            self.load_button.setDisabled(False)
+        else:
+            self.load_button.setDisabled(True)

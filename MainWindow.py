@@ -20,7 +20,6 @@ class MainWindow(QMainWindow):
         self.file.addAction(self.load_action)
         self.load_action.triggered.connect(self.return_to_workspace_selector)
 
-
         self.root = QStackedWidget()
         self.workspace_selector = WorkspaceSelector(self.open_workspace)
         self.workspace_selector_idx = self.root.addWidget(self.workspace_selector)
@@ -44,6 +43,7 @@ class MainWindow(QMainWindow):
         if self.workspace:
             self.root.removeWidget(self.workspace)
         self.root.setCurrentIndex(self.workspace_selector_idx)
+        self.workspace_selector.load_all_workspaces()
 
     def is_workspace_loaded(self):
         return len(self.workspace.monitors) > 0

@@ -68,7 +68,7 @@ class Workspace(QWidget):
         monitor = self.monitor_tree.currentItem()
         if type(monitor) is not Monitor:
             monitor = monitor.parent()
-        monitor.add_default_window()
+        self.monitor_tree.setCurrentItem(monitor.add_default_window())
         monitor.setExpanded(True)
         self.canvas.update()
 

@@ -36,6 +36,7 @@ class Monitor(QTreeWidgetItem):
     def add_default_window(self):
         window = Window(0, 0, 0, self.monitor_width//3, self.monitor_height//2)
         self.add_window(window)
+        return window
 
     def add_window(self, window):
         self.addChild(window)
