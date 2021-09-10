@@ -1,13 +1,14 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QTreeWidget, QLabel, QPushButton, QDesktopWidget, QMessageBox, \
-    QCheckBox
+from PyQt5.QtWidgets import QWidget, QGridLayout, QTreeWidget, QLabel, QPushButton, QDesktopWidget, QMessageBox
 
+from ApplicationParameters import ApplicationParameters
 from Canvas import Canvas
 from FileHandler import FileHandler
 from Monitor import Monitor
-from TextInput import TargetInput
 from TransformInput import TransformInput
 from Window import Window
+from WindowButtons import WindowButtons
+from WindowManager import WindowManager
 
 
 class Workspace(QWidget):
@@ -43,9 +44,11 @@ class Workspace(QWidget):
         grid.setRowStretch(1, 3)
         grid.setRowStretch(2, 3)
         grid.setRowStretch(3, 1)
-        new_button = QPushButton("Add New Window")
-        new_button.clicked.connect(self.add_window_to_monitor)
-        grid.addWidget(new_button, 3, 0, 1, 1)
+        window_buttons = WindowButtons()
+        window_buttons.add_new_window.clicked.connect(self.add_window_to_monitor)
+        window_buttons.run.clicked.connect(self.run)
+        grid.addWidget(window_buttons, 3, 0, 1, 1)
+        self.application_parameters = ApplicationParameters()
         self.transform_input = TransformInput()
         self.transform_input.x_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.y_input.text_field.textEdited.connect(self.on_change_window_property)
@@ -54,9 +57,9 @@ class Workspace(QWidget):
         self.transform_input.h_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
         grid.addWidget(self.transform_input, 3, 1, 1, 1)
-        self.target = TargetInput()
-        self.target.text_field.textChanged.connect(self.on_change_window_property)
-        grid.addWidget(self.target, 3, 2, 1, 2)
+        self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
+        grid.addWidget(self.application_parameters, 3, 2, 1, 2)
         self.setLayout(grid)
 
     def on_tree_select(self, item, previous):
@@ -119,18 +122,38 @@ class Workspace(QWidget):
         self.update_text_fields(window)
 
     def update_text_fields(self, window):
+        self.disconnect_fields()
         self.transform_input.x_input.text_field.setText(str(window.win_x))
         self.transform_input.y_input.text_field.setText(str(window.win_y))
         self.transform_input.z_input.text_field.setText(str(window.win_z))
         self.transform_input.w_input.text_field.setText(str(window.win_w))
         self.transform_input.h_input.text_field.setText(str(window.win_h))
-        check_box = self.transform_input.exact_position_toggle.check_box
-        check_box.toggled.disconnect()
-        check_box.setChecked(window.is_pixel_precision_enabled)
-        check_box.toggled.connect(self.on_toggle_pixel_precision)
-        self.target.text_field.setText(str(window.target))
+        self.transform_input.exact_position_toggle.check_box.setChecked(window.is_pixel_precision_enabled)
+        self.application_parameters.target.text_field.setText(str(window.target))
+        self.application_parameters.process.text_field.setText(str(window.process_name))
+        self.connect_fields()
         self.show_properties()
         self.canvas.update()
+
+    def disconnect_fields(self):
+        self.transform_input.exact_position_toggle.check_box.toggled.disconnect()
+        self.application_parameters.target.text_field.textChanged.disconnect()
+        self.application_parameters.process.text_field.textChanged.disconnect()
+        self.transform_input.x_input.text_field.textEdited.disconnect()
+        self.transform_input.y_input.text_field.textEdited.disconnect()
+        self.transform_input.z_input.text_field.textEdited.disconnect()
+        self.transform_input.w_input.text_field.textEdited.disconnect()
+        self.transform_input.h_input.text_field.textEdited.disconnect()
+
+    def connect_fields(self):
+        self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
+        self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
+        self.transform_input.x_input.text_field.textEdited.connect(self.on_change_window_property)
+        self.transform_input.y_input.text_field.textEdited.connect(self.on_change_window_property)
+        self.transform_input.z_input.text_field.textEdited.connect(self.on_change_window_property)
+        self.transform_input.w_input.text_field.textEdited.connect(self.on_change_window_property)
+        self.transform_input.h_input.text_field.textEdited.connect(self.on_change_window_property)
 
     def on_change_window_property(self, _):
         window = self.monitor_tree.currentItem()
@@ -143,7 +166,8 @@ class Workspace(QWidget):
             z = int(self.transform_input.z_input.text)
             w = int(self.transform_input.w_input.text)
             h = int(self.transform_input.h_input.text)
-            target = self.target.text
+            target = self.application_parameters.target.text
+            process_name = self.application_parameters.process.text
             is_pixel_precision_enabled = self.transform_input.exact_position_toggle.check_box.isChecked()
         except ValueError as e:
             print(e)
@@ -155,6 +179,7 @@ class Workspace(QWidget):
         window.win_w = w
         window.win_h = h
         window.target = target
+        window.process_name = process_name
         window.is_pixel_precision_enabled = is_pixel_precision_enabled
         self.canvas.update()
 
@@ -178,8 +203,12 @@ class Workspace(QWidget):
 
     def hide_properties(self):
         self.transform_input.setHidden(True)
-        self.target.setHidden(True)
+        self.application_parameters.setHidden(True)
 
     def show_properties(self):
         self.transform_input.setHidden(False)
-        self.target.setHidden(False)
+        self.application_parameters.setHidden(False)
+
+    def run(self):
+        window_manager = WindowManager()
+        window_manager.run(self.monitors)

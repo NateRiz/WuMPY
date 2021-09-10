@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLayout, QCheckBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
 from TextCheckBox import TextCheckBox
 from TextInput import TextInput
