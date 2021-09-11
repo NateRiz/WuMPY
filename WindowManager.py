@@ -12,9 +12,8 @@ class WindowManager:
 
         for monitor in monitors:
             for window in monitor.windows:
-                print("?", window.process_name)
                 if window.process_name in active_windows:
-                    print("yes")
+                    print(f"Moving {window.process_name}")
                     win32gui.MoveWindow(active_windows[window.process_name],
                                         window.absolute_x,
                                         window.absolute_y,
@@ -23,16 +22,17 @@ class WindowManager:
                                         True)
 
     def win_enum_handler(self, hwnd, results):
-        if win32gui.IsWindowVisible(hwnd):
-            window_text = win32gui.GetWindowText(hwnd).strip()
-            if window_text:
-                results[window_text] = hwnd
-                print(f"Window:[{window_text}]")
+        #if 1 or win32gui.IsWindowVisible(hwnd):
+        window_text = win32gui.GetWindowText(hwnd).strip()
+        if window_text:
+            results[window_text] = hwnd
+            #print(f"Window:[{window_text}]")
+        """
+        x0, y0, x1, y1 = win32gui.GetWindowRect(hwnd)
+        """
 
-            """
-            x0, y0, x1, y1 = win32gui.GetWindowRect(hwnd)
-            w = x1 - x0
-            h = y1 - y0
-            print(x0, x1, y0, y1, w, h)
-            win32gui.MoveWindow(hwnd, x0, y0, w + 500, h + 500, True)
-            """
+    def list_windows(self):
+        windows = {}
+        win32gui.EnumWindows(self.win_enum_handler, windows)
+        return windows
+
