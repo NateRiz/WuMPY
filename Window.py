@@ -1,4 +1,6 @@
 from random import randint
+
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTreeWidgetItem
 
 
@@ -13,18 +15,19 @@ class Window(QTreeWidgetItem):
         self.target = ""
         self.process_name = ""
         self.name = "Window"
+        self.setFlags(self.flags() | Qt.ItemIsEditable)
         self.is_pixel_precision_enabled = False
         self.color = (randint(200, 255), randint(200, 255), randint(200, 255))
-        self.setText(0, str(self))
-        self.setToolTip(0, str(self))
+        self.setText(0, self.name)
+        self.setToolTip(0, self.name)
 
     def serialize(self):
         return self.name, self.win_x, self.win_y, self.win_z, self.win_w, self.win_h, self.target, self.process_name, self.is_pixel_precision_enabled, self.color
 
     def deserialize(self, data):
         self.name, self.win_x, self.win_y, self.win_z, self.win_w, self.win_h, self.target, self.process_name, self.is_pixel_precision_enabled, self.color = data
-        self.setText(0, str(self))
-        self.setToolTip(0, str(self))
+        self.setText(0, self.name)
+        self.setToolTip(0, self.name)
 
     def __str__(self):
         return f"{self.name} {self.win_x} {self.win_y} {self.win_z} {self.win_w} {self.win_h}"
@@ -59,5 +62,6 @@ class Window(QTreeWidgetItem):
         if not self.is_pixel_precision_enabled:
             return int(self.win_h / 100 * self.parent().monitor_height)
         return self.win_h
+
 
 

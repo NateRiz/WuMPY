@@ -1,3 +1,5 @@
+from PyQt5.QtCore import Qt
+
 from Window import Window
 from PyQt5.QtWidgets import QTreeWidgetItem
 
@@ -12,6 +14,7 @@ class Monitor(QTreeWidgetItem):
 
         self.setText(0, str(self))
         self.setToolTip(0, str(self))
+
 
     def __str__(self):
         return f"{self.name} ({self.monitor_width}x{self.monitor_height})"
@@ -41,3 +44,8 @@ class Monitor(QTreeWidgetItem):
     def add_window(self, window):
         self.addChild(window)
         self.windows.append(window)
+
+    def delete_window(self, window):
+        if window in self.windows:
+            self.windows.remove(window)
+        self.removeChild(window)

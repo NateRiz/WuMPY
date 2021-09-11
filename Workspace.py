@@ -5,6 +5,7 @@ from ApplicationParameters import ApplicationParameters
 from Canvas import Canvas
 from FileHandler import FileHandler
 from Monitor import Monitor
+from MonitorTree import MonitorTree
 from TransformInput import TransformInput
 from Window import Window
 from WindowButtons import WindowButtons
@@ -20,9 +21,7 @@ class Workspace(QWidget):
         grid = QGridLayout()
         grid.setAlignment(Qt.AlignTop)
 
-        self.monitor_tree = QTreeWidget()
-        self.monitor_tree.setColumnCount(1)
-        self.monitor_tree.setHeaderLabel("Monitors")
+        self.monitor_tree = MonitorTree()
         self.monitors = []
 
         if should_load_from_file:
@@ -46,6 +45,7 @@ class Workspace(QWidget):
         grid.setRowStretch(3, 1)
         window_buttons = WindowButtons()
         window_buttons.add_new_window.clicked.connect(self.add_window_to_monitor)
+        window_buttons.delete_window.clicked.connect(self.delete_window)
         window_buttons.run.clicked.connect(self.run)
         grid.addWidget(window_buttons, 3, 0, 1, 1)
         self.application_parameters = ApplicationParameters()
@@ -76,6 +76,13 @@ class Workspace(QWidget):
         self.monitor_tree.setCurrentItem(monitor.add_default_window())
         monitor.setExpanded(True)
         self.canvas.update()
+
+    def delete_window(self):
+        window = self.monitor_tree.currentItem()
+        if type(window) is not Window:
+            return
+        monitor = window.parent()
+        monitor.delete_window(window)
 
     def on_select_monitor(self, monitor):
         self.canvas.set_monitor(monitor)
