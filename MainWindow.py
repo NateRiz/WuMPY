@@ -37,11 +37,13 @@ class MainWindow(QMainWindow):
         self.root.setCurrentIndex(idx)
 
     def return_to_workspace_selector(self):
+        if self.workspace:
+            is_safe_to_leave = self.workspace.try_prompt_for_save()
+            if not is_safe_to_leave:
+                return
+            self.root.removeWidget(self.workspace)
         self.setFixedHeight(300)
         self.setFixedWidth(400)
-
-        if self.workspace:
-            self.root.removeWidget(self.workspace)
         self.root.setCurrentIndex(self.workspace_selector_idx)
         self.workspace_selector.load_all_workspaces()
 

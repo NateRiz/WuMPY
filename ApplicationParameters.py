@@ -27,8 +27,16 @@ class ApplicationParameters(QWidget):
         self.setLayout(self.v_layout)
 
     def get_windows(self):
+        """
+        Get names of all open windows.
+        :return: [String] window names
+        """
         return WindowManager().list_windows()
 
     def open_color_picker(self):
+        """
+        Open QT Color picker window.
+        :return: None
+        """
         color = QColorDialog.getColor()
         self.color.text_field.setText(str(color.getRgb()[:-1]))

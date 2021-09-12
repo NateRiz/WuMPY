@@ -12,10 +12,19 @@ class Canvas(QLabel):
         self.scale = 0
 
     def set_monitor(self, monitor):
+        """
+        Set the currently selected monitor to draw.
+        :param monitor: Monitor
+        :return: None
+        """
         self.monitor = monitor
         self.update()
 
-    def paintEvent(self, a0: QPaintEvent) -> None:
+    def paintEvent(self, _: QPaintEvent) -> None:
+        """
+        Draw the Canvas
+        :return: None
+        """
         if not self.monitor:
             return
 
@@ -34,6 +43,10 @@ class Canvas(QLabel):
         self._draw_monitor()
 
     def _draw_monitor(self):
+        """
+        Draw rectangle representing monitor dimensions
+        :return: None
+        """
         painter = QPainter(self)
         brush = QBrush(QColor(255, 255, 255))
         painter.setBrush(brush)
@@ -44,6 +57,11 @@ class Canvas(QLabel):
         [self._draw_window(window) for window in windows]
 
     def _draw_window(self, window):
+        """
+        Draw window by percentage or by exact pixel.
+        :param window: Window
+        :return: None
+        """
         painter = QPainter(self)
         brush = QBrush(QColor(*window.color))
         painter.setBrush(brush)

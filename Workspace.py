@@ -7,6 +7,7 @@ from FileHandler import FileHandler
 from Monitor import Monitor
 from MonitorTree import MonitorTree
 from TransformInput import TransformInput
+from Util.WMPYMath import try_parse_color
 from Window import Window
 from WindowButtons import WindowButtons
 from WindowManager import WindowManager
@@ -17,6 +18,7 @@ class Workspace(QWidget):
         super().__init__()
         self.workspace_name = workspace_name
         self.return_to_workspace_selector_callback = return_to_workspace_selector_callback
+        self.is_saved = True
 
         grid = QGridLayout()
         grid.setAlignment(Qt.AlignTop)
@@ -64,6 +66,12 @@ class Workspace(QWidget):
         self.setLayout(grid)
 
     def on_tree_select(self, item, previous):
+        """
+        Callback when something is selected in the tree.
+        :param item: Newly selected item
+        :param previous: Item that was unselected
+        :return: None
+        """
         if type(item) is Monitor:
             self.on_select_monitor(item)
         elif type(item) is Window:
@@ -71,6 +79,10 @@ class Workspace(QWidget):
             self.on_select_window(item)
 
     def add_window_to_monitor(self):
+        """
+        Add a new default Window to the current monitor
+        :return: None
+        """
         monitor = self.monitor_tree.currentItem()
         if type(monitor) is not Monitor:
             monitor = monitor.parent()
@@ -79,6 +91,10 @@ class Workspace(QWidget):
         self.canvas.update()
 
     def delete_window(self):
+        """
+        Remove a window from the current monitor
+        :return:  None
+        """
         window = self.monitor_tree.currentItem()
         if type(window) is not Window:
             return
@@ -86,6 +102,11 @@ class Workspace(QWidget):
         monitor.delete_window(window)
 
     def on_select_monitor(self, monitor):
+        """
+        Called when user selects a monitor in the tree.
+        :param monitor: Newly selected monitor
+        :return: None
+        """
         self.canvas.set_monitor(monitor)
         self.monitor_label.setText(str(monitor))
         self.hide_properties()
@@ -145,6 +166,12 @@ class Workspace(QWidget):
         self.canvas.update()
 
     def disconnect_fields(self):
+        """
+        Whe we switch windows, we programmatically set the text for every label.
+        This causes the textEdited callback to get called and breaks things.
+        We must disconnect and reconnect all callbacks when loading in text into a text field.
+        :return:
+        """
         self.transform_input.exact_position_toggle.check_box.toggled.disconnect()
         self.application_parameters.target.text_field.textChanged.disconnect()
         self.application_parameters.process.text_field.textChanged.disconnect()
@@ -156,6 +183,10 @@ class Workspace(QWidget):
         self.transform_input.h_input.text_field.textEdited.disconnect()
 
     def connect_fields(self):
+        """
+        Reconnect all the fields to their callbacks
+        :return:
+        """
         self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
         self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
         self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
@@ -167,6 +198,7 @@ class Workspace(QWidget):
         self.transform_input.h_input.text_field.textEdited.connect(self.on_change_window_property)
 
     def on_change_window_property(self, _):
+        self.is_saved = False
         window = self.monitor_tree.currentItem()
         if type(window) is not Window:
             return
@@ -197,8 +229,13 @@ class Workspace(QWidget):
         self.canvas.update()
 
     def save(self):
+        """
+        Save current new workspace
+        :return:
+        """
         file_handler = FileHandler()
         file_handler.save(self.workspace_name, self.monitors)
+        self.is_saved = True
 
     def load_workspace(self, filename):
         self.monitors.clear()
@@ -215,26 +252,35 @@ class Workspace(QWidget):
             self.monitors.append(Monitor(f"Monitor {i + 1}", size.width(), size.height()))
 
     def hide_properties(self):
+        """
+        Hide the properties when a window is not selected. ie monitor is selected
+        :return: None
+        """
         self.transform_input.setHidden(True)
         self.application_parameters.setHidden(True)
 
     def show_properties(self):
+        """
+        Show properties when a window is selected
+        :return: None
+        """
         self.transform_input.setHidden(False)
         self.application_parameters.setHidden(False)
+
+    def try_prompt_for_save(self):
+        if self.is_saved:
+            return True
+        response = QMessageBox.question(self, "Save", "Do you want to save your changes?", QMessageBox.Cancel | QMessageBox.Discard | QMessageBox.Save, defaultButton=QMessageBox.Cancel)
+        if response == QMessageBox.Save:
+            self.save()
+            return True
+        elif response == QMessageBox.Discard:
+            return True
+        elif response == QMessageBox.Cancel:
+            return False
+        return False
+
 
     def run(self):
         window_manager = WindowManager()
         window_manager.run(self.monitors)
-
-
-def try_parse_color(color):
-    sanitized = "".join([i for i in color if i.isdigit() or i == ","])
-    parsed = sanitized.split(",")
-    if len(parsed) == 3 and all([i.isdigit() for i in parsed]):
-        return [clamp(0, 255, int(i)) for i in parsed]
-
-    return [0, 0, 0]
-
-
-def clamp(min_, max_, x):
-    return max(min(max_, x), min_)
