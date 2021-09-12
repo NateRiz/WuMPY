@@ -59,6 +59,7 @@ class Workspace(QWidget):
         grid.addWidget(self.transform_input, 3, 1, 1, 1)
         self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
         self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.color.text_field.textChanged.connect(self.on_change_window_property)
         grid.addWidget(self.application_parameters, 3, 2, 1, 2)
         self.setLayout(grid)
 
@@ -138,6 +139,7 @@ class Workspace(QWidget):
         self.transform_input.exact_position_toggle.check_box.setChecked(window.is_pixel_precision_enabled)
         self.application_parameters.target.text_field.setText(str(window.target))
         self.application_parameters.process.text_field.setText(str(window.process_name))
+        self.application_parameters.color.text_field.setText(str(window.color))
         self.connect_fields()
         self.show_properties()
         self.canvas.update()
@@ -146,6 +148,7 @@ class Workspace(QWidget):
         self.transform_input.exact_position_toggle.check_box.toggled.disconnect()
         self.application_parameters.target.text_field.textChanged.disconnect()
         self.application_parameters.process.text_field.textChanged.disconnect()
+        self.application_parameters.color.text_field.textChanged.disconnect()
         self.transform_input.x_input.text_field.textEdited.disconnect()
         self.transform_input.y_input.text_field.textEdited.disconnect()
         self.transform_input.z_input.text_field.textEdited.disconnect()
@@ -156,6 +159,7 @@ class Workspace(QWidget):
         self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
         self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
         self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.color.text_field.textChanged.connect(self.on_change_window_property)
         self.transform_input.x_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.y_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.z_input.text_field.textEdited.connect(self.on_change_window_property)
@@ -175,6 +179,7 @@ class Workspace(QWidget):
             h = int(self.transform_input.h_input.text)
             target = self.application_parameters.target.text
             process_name = self.application_parameters.process.text
+            color = self.application_parameters.color.text
             is_pixel_precision_enabled = self.transform_input.exact_position_toggle.check_box.isChecked()
         except ValueError as e:
             print(e)
@@ -187,6 +192,7 @@ class Workspace(QWidget):
         window.win_h = h
         window.target = target
         window.process_name = process_name
+        window.color = try_parse_color(color)
         window.is_pixel_precision_enabled = is_pixel_precision_enabled
         self.canvas.update()
 
@@ -200,7 +206,7 @@ class Workspace(QWidget):
         try:
             file_handler.load(filename, self.monitors)
         except Exception as e:
-            QMessageBox(text=F"Couldn't load {self.workspace_name}: ({e})", icon=QMessageBox.Critical).exec()
+            QMessageBox(text=F"Could not load {self.workspace_name}: ({e})", icon=QMessageBox.Critical).exec()
             self.monitors.clear()
 
     def create_new_workspace(self):
@@ -219,3 +225,16 @@ class Workspace(QWidget):
     def run(self):
         window_manager = WindowManager()
         window_manager.run(self.monitors)
+
+
+def try_parse_color(color):
+    sanitized = "".join([i for i in color if i.isdigit() or i == ","])
+    parsed = sanitized.split(",")
+    if len(parsed) == 3 and all([i.isdigit() for i in parsed]):
+        return [clamp(0, 255, int(i)) for i in parsed]
+
+    return [0, 0, 0]
+
+
+def clamp(min_, max_, x):
+    return max(min(max_, x), min_)
