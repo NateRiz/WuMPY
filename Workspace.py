@@ -112,6 +112,11 @@ class Workspace(QWidget):
         self.hide_properties()
 
     def on_toggle_pixel_precision(self, is_enabled):
+        """
+        Converts all the transforms to either pixel perfect or percentage based.
+        :param is_enabled: if pixel precision is enabled
+        :return: None
+        """
         window = self.monitor_tree.currentItem()
         if type(window) is not Window:
             return
@@ -122,6 +127,10 @@ class Workspace(QWidget):
             self.convert_window_from_px()
 
     def convert_window_to_px(self):
+        """
+        convert label from percentage to pixels
+        :return:
+        """
         window = self.monitor_tree.currentItem()
         if type(window) is not Window:
             return
@@ -135,6 +144,10 @@ class Workspace(QWidget):
         self.update_text_fields(window)
 
     def convert_window_from_px(self):
+        """
+        Convert label from pixels to percentage
+        :return:
+        """
         window = self.monitor_tree.currentItem()
         if type(window) is not Window:
             return
@@ -148,9 +161,20 @@ class Workspace(QWidget):
         self.update_text_fields(window)
 
     def on_select_window(self, window):
+        """
+        Callback when user selects a window.
+        :param window: New Window
+        :return: None
+        """
         self.update_text_fields(window)
 
     def update_text_fields(self, window):
+        """
+        Callback when any of the fields change.
+        This should be refactored.
+        :param window: What window owns the fields
+        :return: None
+        """
         self.disconnect_fields()
         self.transform_input.x_input.text_field.setText(str(window.win_x))
         self.transform_input.y_input.text_field.setText(str(window.win_y))
@@ -279,7 +303,6 @@ class Workspace(QWidget):
         elif response == QMessageBox.Cancel:
             return False
         return False
-
 
     def run(self):
         window_manager = WindowManager()
