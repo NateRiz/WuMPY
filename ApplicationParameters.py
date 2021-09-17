@@ -1,7 +1,9 @@
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFileDialog, QInputDialog, QColorDialog
 
 from DialogTargetInput import DialogTargetInput
-from WindowManager import WindowManager
+from TextInput import TextInput
+from Win32Facade import Win32Facade
 
 
 class ApplicationParameters(QWidget):
@@ -31,7 +33,7 @@ class ApplicationParameters(QWidget):
         Get names of all open windows.
         :return: [String] window names
         """
-        return WindowManager().list_windows()
+        return Win32Facade().list_windows()
 
     def open_color_picker(self):
         """

@@ -7,7 +7,7 @@ class TextInput(QWidget):
         super().__init__()
         self.label = QLabel(parent=self, text=text)
         self.text_field = QLineEdit()
-        self.text_field.setAlignment(Qt.AlignRight)
+        #self.text_field.setAlignment(Qt.AlignRight)
         self.h_layout = QHBoxLayout()
         self.setLayout(self.h_layout)
         self.h_layout.addWidget(self.label)

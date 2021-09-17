@@ -32,7 +32,7 @@ class FileHandler:
         with open(file_name, "r") as file:
             data = json.load(file)
             for m in data:
-                monitor = Monitor("", 0, 0)
+                monitor = Monitor("", 0, 0, -1)
                 monitor.deserialize(m)
                 out_monitors.append(monitor)
 

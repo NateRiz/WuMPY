@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QTreeWidget, QLabel, QPushButton, QDesktopWidget, QMessageBox
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QMessageBox
 
 from ApplicationParameters import ApplicationParameters
 from Canvas import Canvas
@@ -9,22 +9,31 @@ from MonitorTree import MonitorTree
 from TransformInput import TransformInput
 from Util.WMPYMath import try_parse_color
 from Window import Window
-from WindowButtons import WindowButtons
-from WindowManager import WindowManager
+from MonitorProperties import MonitorProperties
+from Win32Facade import Win32Facade
 
 
 class Workspace(QWidget):
-    def __init__(self, workspace_name, should_load_from_file, return_to_workspace_selector_callback):
+    def __init__(self, workspace_name, hwnd, should_load_from_file, return_to_workspace_selector_callback):
         super().__init__()
         self.workspace_name = workspace_name
         self.return_to_workspace_selector_callback = return_to_workspace_selector_callback
         self.is_saved = True
+        self.hwnd = hwnd
 
         grid = QGridLayout()
         grid.setAlignment(Qt.AlignTop)
 
         self.monitor_tree = MonitorTree()
         self.monitors = []
+
+        self.monitor_properties = MonitorProperties()
+        self.monitor_properties.monitor_index.button.clicked.connect(self.identify_monitor)
+        self.monitor_properties.add_new_window.clicked.connect(self.add_window_to_monitor)
+        self.monitor_properties.delete_window.clicked.connect(self.delete_window)
+        self.monitor_properties.run.clicked.connect(self.run)
+        grid.addWidget(self.monitor_properties, 3, 0, 1, 1)
+        self.hide_monitor_properties()
 
         if should_load_from_file:
             self.load_workspace(self.workspace_name)
@@ -45,13 +54,11 @@ class Workspace(QWidget):
         grid.setRowStretch(1, 3)
         grid.setRowStretch(2, 3)
         grid.setRowStretch(3, 1)
-        window_buttons = WindowButtons()
-        window_buttons.add_new_window.clicked.connect(self.add_window_to_monitor)
-        window_buttons.delete_window.clicked.connect(self.delete_window)
-        window_buttons.run.clicked.connect(self.run)
-        grid.addWidget(window_buttons, 3, 0, 1, 1)
+
         self.application_parameters = ApplicationParameters()
         self.transform_input = TransformInput()
+        self.hide_window_properties()
+        self.monitor_properties.monitor_index.text_field.textEdited.connect(self.on_change_monitor_property)
         self.transform_input.x_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.y_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.z_input.text_field.textEdited.connect(self.on_change_window_property)
@@ -59,9 +66,9 @@ class Workspace(QWidget):
         self.transform_input.h_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
         grid.addWidget(self.transform_input, 3, 1, 1, 1)
-        self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
-        self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
-        self.application_parameters.color.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.target.text_field.textEdited.connect(self.on_change_window_property)
+        self.application_parameters.process.text_field.textEdited.connect(self.on_change_window_property)
+        self.application_parameters.color.text_field.textEdited.connect(self.on_change_window_property)
         grid.addWidget(self.application_parameters, 3, 2, 1, 2)
         self.setLayout(grid)
 
@@ -109,7 +116,9 @@ class Workspace(QWidget):
         """
         self.canvas.set_monitor(monitor)
         self.monitor_label.setText(str(monitor))
-        self.hide_properties()
+        self.monitor_properties.monitor_index.text_field.setText(str(monitor.index))
+        self.show_monitor_properties()
+        self.hide_window_properties()
 
     def on_toggle_pixel_precision(self, is_enabled):
         """
@@ -170,8 +179,7 @@ class Workspace(QWidget):
 
     def update_text_fields(self, window):
         """
-        Callback when any of the fields change.
-        This should be refactored.
+        Callback when a new window is selected.
         :param window: What window owns the fields
         :return: None
         """
@@ -186,7 +194,7 @@ class Workspace(QWidget):
         self.application_parameters.process.text_field.setText(str(window.process_name))
         self.application_parameters.color.text_field.setText(str(window.color))
         self.connect_fields()
-        self.show_properties()
+        self.show_window_properties()
         self.canvas.update()
 
     def disconnect_fields(self):
@@ -197,9 +205,10 @@ class Workspace(QWidget):
         :return:
         """
         self.transform_input.exact_position_toggle.check_box.toggled.disconnect()
-        self.application_parameters.target.text_field.textChanged.disconnect()
-        self.application_parameters.process.text_field.textChanged.disconnect()
-        self.application_parameters.color.text_field.textChanged.disconnect()
+        self.application_parameters.target.text_field.textEdited.disconnect()
+        self.application_parameters.process.text_field.textEdited.disconnect()
+        self.application_parameters.color.text_field.textEdited.disconnect()
+        self.monitor_properties.monitor_index.text_field.textEdited.disconnect()
         self.transform_input.x_input.text_field.textEdited.disconnect()
         self.transform_input.y_input.text_field.textEdited.disconnect()
         self.transform_input.z_input.text_field.textEdited.disconnect()
@@ -212,9 +221,10 @@ class Workspace(QWidget):
         :return:
         """
         self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
-        self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
-        self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
-        self.application_parameters.color.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.target.text_field.textEdited.connect(self.on_change_window_property)
+        self.application_parameters.process.text_field.textEdited.connect(self.on_change_window_property)
+        self.application_parameters.color.text_field.textEdited.connect(self.on_change_window_property)
+        self.monitor_properties.monitor_index.text_field.textEdited.connect(self.on_change_monitor_property)
         self.transform_input.x_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.y_input.text_field.textEdited.connect(self.on_change_window_property)
         self.transform_input.z_input.text_field.textEdited.connect(self.on_change_window_property)
@@ -233,6 +243,7 @@ class Workspace(QWidget):
             z = int(self.transform_input.z_input.text)
             w = int(self.transform_input.w_input.text)
             h = int(self.transform_input.h_input.text)
+            index = int(self.monitor_properties.monitor_index.text)
             target = self.application_parameters.target.text
             process_name = self.application_parameters.process.text
             color = self.application_parameters.color.text
@@ -251,6 +262,20 @@ class Workspace(QWidget):
         window.color = try_parse_color(color)
         window.is_pixel_precision_enabled = is_pixel_precision_enabled
         self.canvas.update()
+
+    def on_change_monitor_property(self, _):
+        self.is_saved = False
+        monitor = self.monitor_tree.currentItem()
+        if type(monitor) is not Monitor:
+            monitor = monitor.parent()
+
+        try:
+            index = int(self.monitor_properties.monitor_index.text)
+        except ValueError as e:
+            print(e)
+            return
+        monitor.index = index
+
 
     def save(self):
         """
@@ -271,11 +296,20 @@ class Workspace(QWidget):
             self.monitors.clear()
 
     def create_new_workspace(self):
-        for i in range(QDesktopWidget().screenCount()):
-            size = QDesktopWidget().screenGeometry(i)
-            self.monitors.append(Monitor(f"Monitor {i + 1}", size.width(), size.height()))
+        win32_facade = Win32Facade()
+        for i, monitor in enumerate(win32_facade.get_monitors()):
+            left, top, right, bottom = monitor
+            width = right - left
+            height = bottom - top
+            self.monitors.append(Monitor(f"Monitor", width, height, i))
 
-    def hide_properties(self):
+    def hide_monitor_properties(self):
+        self.monitor_properties.monitor_index.setHidden(True)
+
+    def show_monitor_properties(self):
+        self.monitor_properties.monitor_index.setHidden(False)
+
+    def hide_window_properties(self):
         """
         Hide the properties when a window is not selected. ie monitor is selected
         :return: None
@@ -283,7 +317,7 @@ class Workspace(QWidget):
         self.transform_input.setHidden(True)
         self.application_parameters.setHidden(True)
 
-    def show_properties(self):
+    def show_window_properties(self):
         """
         Show properties when a window is selected
         :return: None
@@ -304,6 +338,19 @@ class Workspace(QWidget):
             return False
         return False
 
+    def identify_monitor(self):
+        monitor = self.monitor_tree.currentItem()
+        if type(monitor) is not Monitor:
+            monitor = monitor.parent()
+        win32_facade = Win32Facade()
+        win32_facade.move_window_to_monitor(self.hwnd, monitor.index)
+        message = QMessageBox()
+        message.setWindowTitle("Identify")
+        message.setText(f"Moved WuMPY to monitor index: {monitor.index}")
+        message.setIcon(QMessageBox.Information)
+        message.exec()
+        print("fewe")
+
     def run(self):
-        window_manager = WindowManager()
+        window_manager = Win32Facade()
         window_manager.run(self.monitors)

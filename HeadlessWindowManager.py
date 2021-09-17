@@ -1,7 +1,7 @@
-from os import path, getcwd
+from os import path
 
 from FileHandler import FileHandler
-from WindowManager import WindowManager
+from Win32Facade import Win32Facade
 
 
 class HeadlessWindowManager:
@@ -17,6 +17,5 @@ class HeadlessWindowManager:
             # Otherwise check if they provided a full path.
             file_handler.load(file, self.monitors)
 
-        print(self.monitors)
-        window_manager = WindowManager()
+        window_manager = Win32Facade()
         window_manager.run(self.monitors)

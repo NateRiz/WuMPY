@@ -1,10 +1,17 @@
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
+from DialogTargetInput import DialogTargetInput
 
-class WindowButtons(QWidget):
+
+class MonitorProperties(QWidget):
     def __init__(self):
         super().__init__()
         self.v_layout = QVBoxLayout()
+
+        self.monitor_index = DialogTargetInput("Monitor Index:", "Identify")
+        self.monitor_index.text_field.setValidator(QIntValidator())
+        self.v_layout.addWidget(self.monitor_index)
 
         self.add_new_window = QPushButton(text="Add New Window")
         self.delete_window = QPushButton(text="Delete Window")

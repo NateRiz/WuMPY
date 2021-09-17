@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.root)
 
     def open_workspace(self, workspace_name, should_load_from_file):
-        self.workspace = Workspace(workspace_name, should_load_from_file, self.return_to_workspace_selector)
+        self.workspace = Workspace(workspace_name, self.winId(), should_load_from_file, self.return_to_workspace_selector)
         if not self.is_workspace_loaded():
             return
 
