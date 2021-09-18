@@ -23,12 +23,10 @@ class Win32Facade:
         for monitor in monitors:
             for window in monitor.windows:
                 if window.process_name in active_windows:
-                    win32gui.MoveWindow(active_windows[window.process_name],
-                                        window.absolute_x,
-                                        window.absolute_y,
-                                        window.absolute_w,
-                                        window.absolute_h,
-                                        True)
+                    if window.is_pixel_precision_enabled:
+                        self.move_window_absolute(active_windows[window.process_name], window)
+                    else:
+                        self.move_window_relative(active_windows[window.process_name], window)
                 else:
                     try:
                         subprocess.Popen(window.target)
@@ -45,17 +43,33 @@ class Win32Facade:
         win32gui.EnumWindows(self.win_enum_handler, windows)
         return windows
 
+    def move_window_absolute(self, hwnd, window):
+        win32gui.MoveWindow(hwnd,
+                            window.win_x,
+                            window.win_y,
+                            window.win_w,
+                            window.win_h,
+                            True)
+
+    def move_window_relative(self, hwnd, window):
+        monitor_index = window.parent().index
+        monitors = self.get_monitors()
+        monitor = monitors[monitor_index]
+        mx, my = monitor[0], monitor[1]
+        mw = monitor[2] - mx
+        mh = monitor[3] - my
+        x = int(mx + (mw * (window.win_x / 100)))
+        y = int(my + (mh * (window.win_y / 100)))
+        w = int((window.win_w / 100) * mw)
+        h = int((window.win_h / 100) * mh)
+        win32gui.MoveWindow(hwnd, x, y, w, h, True)
+
     def move_window_to_monitor(self, hwnd, monitor_index):
         monitors = self.get_monitors()
         monitor = monitors[monitor_index]
         mx, my = monitor[0], monitor[1]
         mw = monitor[2] - mx
         mh = monitor[3] - my
-        x = mx + int(mw/2) - 500
-        y = my + int(mh/2) - 400
-        print(x, y)
+        x = mx + int(mw / 2) - 500
+        y = my + int(mh / 2) - 400
         win32gui.MoveWindow(hwnd, x, y, 1000, 800, True)
-
-
-
-

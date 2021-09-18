@@ -34,34 +34,3 @@ class Window(QTreeWidgetItem):
 
     def __repr__(self):
         return str(self)
-
-    @property
-    def absolute_x(self):
-        if not self.is_pixel_precision_enabled:
-            return int(self.win_x / 100 * self.parent().monitor_width)
-        return self.win_x
-
-    @property
-    def absolute_y(self):
-        if not self.is_pixel_precision_enabled:
-            return int(self.win_y / 100 * self.parent().monitor_height)
-        return self.win_y
-    
-    @property
-    def absolute_z(self):
-        return self.win_z
-    
-    @property
-    def absolute_w(self):
-        if not self.is_pixel_precision_enabled:
-            return int(self.win_w / 100 * self.parent().monitor_width)
-        return self.win_w
-    
-    @property
-    def absolute_h(self):
-        if not self.is_pixel_precision_enabled:
-            return int(self.win_h / 100 * self.parent().monitor_height)
-        return self.win_h
-
-
-

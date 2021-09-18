@@ -22,10 +22,10 @@ class Monitor(QTreeWidgetItem):
 
     def serialize(self):
         windows = tuple(window.serialize() for window in self.windows)
-        return self.name, self.monitor_width, self.monitor_height, windows
+        return self.name, self.index, self.monitor_width, self.monitor_height, windows
 
     def deserialize(self, data):
-        self.name, self.monitor_width, self.monitor_height, windows = data
+        self.name, self.index, self.monitor_width, self.monitor_height, windows = data
         for w in windows:
             window = Window(0, 0, 0, 0, 0)
             window.deserialize(w)
