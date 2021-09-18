@@ -1,7 +1,7 @@
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
-from DialogTargetInput import DialogTargetInput
+from CustomWidgets.DialogTargetInput import DialogTargetInput
 
 
 class MonitorProperties(QWidget):

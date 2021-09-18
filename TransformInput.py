@@ -1,8 +1,8 @@
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
-from TextCheckBox import TextCheckBox
-from TextInput import TextInput
+from CustomWidgets.TextCheckBox import TextCheckBox
+from CustomWidgets.TextInput import TextInput
 
 
 class TransformInput(QWidget):

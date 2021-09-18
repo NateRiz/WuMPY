@@ -1,8 +1,6 @@
-from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFileDialog, QInputDialog, QColorDialog
 
-from DialogTargetInput import DialogTargetInput
-from TextInput import TextInput
+from CustomWidgets.DialogTargetInput import DialogTargetInput
 from Win32Facade import Win32Facade
 
 

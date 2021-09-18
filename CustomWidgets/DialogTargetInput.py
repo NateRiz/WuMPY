@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QPushButton, QFileDialog
+from PyQt5.QtWidgets import QPushButton
 
-from TextInput import TextInput
+from CustomWidgets.TextInput import TextInput
 
 
 class DialogTargetInput(TextInput):
