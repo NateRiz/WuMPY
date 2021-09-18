@@ -2,8 +2,9 @@
 
 WuMPY is a Window Manager created in Python3 for snapping windows and launching preset applications in a workspace. 
 <p align="center">
-   <img src="./Preview/WuMPY.png />
+   <img src="./Preview/WuMPY.png"/>
 </p>
+
 ## Instructions
 A workspace contains windows that'll be open on the desktop all at once. For example, a work based workspace may contain an Excel sheet, Spotify, Email, and Zoom.
 <br>Workspaces support multiple monitors and are generalizable to different monitor sizes. 
