@@ -1,3 +1,4 @@
+from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtGui import QPainter, QBrush, QColor, QPaintEvent
 
@@ -7,6 +8,7 @@ class Canvas(QLabel):
         super().__init__()
         self.setStyleSheet("background-color: gray")
         self.monitor = None
+        self.window = None
 
         self.monitor_dimensions = (-1, -1, -1, -1)
         self.scale = 0
@@ -18,6 +20,10 @@ class Canvas(QLabel):
         :return: None
         """
         self.monitor = monitor
+        self.update()
+
+    def set_window(self, window):
+        self.window = window
         self.update()
 
     def paintEvent(self, _: QPaintEvent) -> None:
@@ -52,8 +58,10 @@ class Canvas(QLabel):
         painter.setBrush(brush)
         painter.drawRect(*self.monitor_dimensions)
 
+        # Sort by z index. Selected window should be drawn on top of everything.
         windows = sorted([self.monitor.child(i) for i in range(self.monitor.childCount())],
-                         key=lambda window: window.win_z)
+                         key=lambda window: (window is self.window, window.win_z))
+
         [self._draw_window(window) for window in windows]
 
     def _draw_window(self, window):
@@ -79,3 +87,11 @@ class Canvas(QLabel):
             h = int((window.win_h / 100) * monitor_h)
 
         painter.drawRect(x, y, w, h)
+
+        if self.window is window:
+            radius = 4
+            painter.setBrush(QBrush(QColor(225, 225, 225)))
+            painter.drawEllipse(QPoint(x, y), radius, radius)
+            painter.drawEllipse(QPoint(x + w, y), radius, radius)
+            painter.drawEllipse(QPoint(x, y + h), radius, radius)
+            painter.drawEllipse(QPoint(x + w, y + h), radius, radius)

@@ -72,6 +72,20 @@ class Workspace(QWidget):
         grid.addWidget(self.application_parameters, 3, 2, 1, 2)
         self.setLayout(grid)
 
+    def get_selected_monitor(self):
+        monitor = self.monitor_tree.currentItem()
+        if not monitor:
+            return
+        if type(monitor) == Window:
+            return monitor.parent()
+        return monitor
+
+    def get_selected_window(self):
+        window = self.monitor_tree.currentItem()
+        if type(window) != Window:
+            return None
+        return window
+
     def on_tree_select(self, item, previous):
         """
         Callback when something is selected in the tree.
@@ -90,9 +104,13 @@ class Workspace(QWidget):
         Add a new default Window to the current monitor
         :return: None
         """
-        monitor = self.monitor_tree.currentItem()
+        monitor = self.get_selected_monitor()
+        if not monitor:
+            return
+
         if type(monitor) is not Monitor:
             monitor = monitor.parent()
+
         self.monitor_tree.setCurrentItem(monitor.add_default_window())
         monitor.setExpanded(True)
         self.canvas.update()
@@ -102,8 +120,8 @@ class Workspace(QWidget):
         Remove a window from the current monitor
         :return:  None
         """
-        window = self.monitor_tree.currentItem()
-        if type(window) is not Window:
+        window = self.get_selected_window()
+        if not window:
             return
         monitor = window.parent()
         monitor.delete_window(window)
@@ -126,8 +144,8 @@ class Workspace(QWidget):
         :param is_enabled: if pixel precision is enabled
         :return: None
         """
-        window = self.monitor_tree.currentItem()
-        if type(window) is not Window:
+        window = self.get_selected_window()
+        if not window:
             return
         window.is_pixel_precision_enabled = is_enabled
         if is_enabled:
@@ -140,8 +158,8 @@ class Workspace(QWidget):
         convert label from percentage to pixels
         :return:
         """
-        window = self.monitor_tree.currentItem()
-        if type(window) is not Window:
+        window = self.get_selected_window()
+        if not window:
             return
         monitor = window.parent()
         monitor_width = monitor.monitor_width
@@ -157,8 +175,8 @@ class Workspace(QWidget):
         Convert label from pixels to percentage
         :return:
         """
-        window = self.monitor_tree.currentItem()
-        if type(window) is not Window:
+        window = self.get_selected_window()
+        if not window:
             return
         monitor = window.parent()
         monitor_width = monitor.monitor_width
@@ -175,6 +193,7 @@ class Workspace(QWidget):
         :param window: New Window
         :return: None
         """
+        self.canvas.set_window(window)
         self.update_text_fields(window)
 
     def update_text_fields(self, window):
@@ -233,8 +252,8 @@ class Workspace(QWidget):
 
     def on_change_window_property(self, _):
         self.is_saved = False
-        window = self.monitor_tree.currentItem()
-        if type(window) is not Window:
+        window = self.get_selected_window()
+        if not window:
             return
 
         try:
@@ -243,7 +262,6 @@ class Workspace(QWidget):
             z = int(self.transform_input.z_input.text)
             w = int(self.transform_input.w_input.text)
             h = int(self.transform_input.h_input.text)
-            index = int(self.monitor_properties.monitor_index.text)
             target = self.application_parameters.target.text
             process_name = self.application_parameters.process.text
             color = self.application_parameters.color.text
@@ -265,9 +283,9 @@ class Workspace(QWidget):
 
     def on_change_monitor_property(self, _):
         self.is_saved = False
-        monitor = self.monitor_tree.currentItem()
-        if type(monitor) is not Monitor:
-            monitor = monitor.parent()
+        monitor = self.get_selected_monitor()
+        if monitor is None:
+            return
 
         try:
             index = int(self.monitor_properties.monitor_index.text)
@@ -339,9 +357,10 @@ class Workspace(QWidget):
         return False
 
     def identify_monitor(self):
-        monitor = self.monitor_tree.currentItem()
-        if type(monitor) is not Monitor:
-            monitor = monitor.parent()
+        monitor = self.get_selected_monitor()
+        if not monitor:
+            return
+
         win32_facade = Win32Facade()
         win32_facade.move_window_to_monitor(self.hwnd, monitor.index)
         message = QMessageBox()
@@ -349,7 +368,6 @@ class Workspace(QWidget):
         message.setText(f"Moved WuMPY to monitor index: {monitor.index}")
         message.setIcon(QMessageBox.Information)
         message.exec()
-        print("fewe")
 
     def run(self):
         window_manager = Win32Facade()
