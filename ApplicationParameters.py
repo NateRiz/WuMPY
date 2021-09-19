@@ -39,4 +39,6 @@ class ApplicationParameters(QWidget):
         :return: None
         """
         color = QColorDialog.getColor()
+
+        # Ignore the Alpha channel
         self.color.text_field.setText(str(color.getRgb()[:-1]))

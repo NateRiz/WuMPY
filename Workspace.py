@@ -58,17 +58,17 @@ class Workspace(QWidget):
         self.application_parameters = ApplicationParameters()
         self.transform_input = TransformInput()
         self.hide_window_properties()
-        self.monitor_properties.monitor_index.text_field.textEdited.connect(self.on_change_monitor_property)
-        self.transform_input.x_input.text_field.textEdited.connect(self.on_change_window_property)
-        self.transform_input.y_input.text_field.textEdited.connect(self.on_change_window_property)
-        self.transform_input.z_input.text_field.textEdited.connect(self.on_change_window_property)
-        self.transform_input.w_input.text_field.textEdited.connect(self.on_change_window_property)
-        self.transform_input.h_input.text_field.textEdited.connect(self.on_change_window_property)
+        self.monitor_properties.monitor_index.text_field.textChanged.connect(self.on_change_monitor_property)
+        self.transform_input.x_input.text_field.textChanged.connect(self.on_change_window_property)
+        self.transform_input.y_input.text_field.textChanged.connect(self.on_change_window_property)
+        self.transform_input.z_input.text_field.textChanged.connect(self.on_change_window_property)
+        self.transform_input.w_input.text_field.textChanged.connect(self.on_change_window_property)
+        self.transform_input.h_input.text_field.textChanged.connect(self.on_change_window_property)
         self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
         grid.addWidget(self.transform_input, 3, 1, 1, 1)
-        self.application_parameters.target.text_field.textEdited.connect(self.on_change_window_property)
-        self.application_parameters.process.text_field.textEdited.connect(self.on_change_window_property)
-        self.application_parameters.color.text_field.textEdited.connect(self.on_change_window_property)
+        self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.color.text_field.textChanged.connect(self.on_change_window_property)
         grid.addWidget(self.application_parameters, 3, 2, 1, 2)
         self.setLayout(grid)
 
@@ -200,20 +200,20 @@ class Workspace(QWidget):
     def disconnect_fields(self):
         """
         Whe we switch windows, we programmatically set the text for every label.
-        This causes the textEdited callback to get called and breaks things.
+        This causes the textChanged callback to get called and breaks things.
         We must disconnect and reconnect all callbacks when loading in text into a text field.
         :return:
         """
         self.transform_input.exact_position_toggle.check_box.toggled.disconnect()
-        self.application_parameters.target.text_field.textEdited.disconnect()
-        self.application_parameters.process.text_field.textEdited.disconnect()
-        self.application_parameters.color.text_field.textEdited.disconnect()
-        self.monitor_properties.monitor_index.text_field.textEdited.disconnect()
-        self.transform_input.x_input.text_field.textEdited.disconnect()
-        self.transform_input.y_input.text_field.textEdited.disconnect()
-        self.transform_input.z_input.text_field.textEdited.disconnect()
-        self.transform_input.w_input.text_field.textEdited.disconnect()
-        self.transform_input.h_input.text_field.textEdited.disconnect()
+        self.application_parameters.target.text_field.textChanged.disconnect()
+        self.application_parameters.process.text_field.textChanged.disconnect()
+        self.application_parameters.color.text_field.textChanged.disconnect()
+        self.monitor_properties.monitor_index.text_field.textChanged.disconnect()
+        self.transform_input.x_input.text_field.textChanged.disconnect()
+        self.transform_input.y_input.text_field.textChanged.disconnect()
+        self.transform_input.z_input.text_field.textChanged.disconnect()
+        self.transform_input.w_input.text_field.textChanged.disconnect()
+        self.transform_input.h_input.text_field.textChanged.disconnect()
 
     def connect_fields(self):
         """
@@ -221,15 +221,15 @@ class Workspace(QWidget):
         :return:
         """
         self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
-        self.application_parameters.target.text_field.textEdited.connect(self.on_change_window_property)
-        self.application_parameters.process.text_field.textEdited.connect(self.on_change_window_property)
-        self.application_parameters.color.text_field.textEdited.connect(self.on_change_window_property)
-        self.monitor_properties.monitor_index.text_field.textEdited.connect(self.on_change_monitor_property)
-        self.transform_input.x_input.text_field.textEdited.connect(self.on_change_window_property)
-        self.transform_input.y_input.text_field.textEdited.connect(self.on_change_window_property)
-        self.transform_input.z_input.text_field.textEdited.connect(self.on_change_window_property)
-        self.transform_input.w_input.text_field.textEdited.connect(self.on_change_window_property)
-        self.transform_input.h_input.text_field.textEdited.connect(self.on_change_window_property)
+        self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.color.text_field.textChanged.connect(self.on_change_window_property)
+        self.monitor_properties.monitor_index.text_field.textChanged.connect(self.on_change_monitor_property)
+        self.transform_input.x_input.text_field.textChanged.connect(self.on_change_window_property)
+        self.transform_input.y_input.text_field.textChanged.connect(self.on_change_window_property)
+        self.transform_input.z_input.text_field.textChanged.connect(self.on_change_window_property)
+        self.transform_input.w_input.text_field.textChanged.connect(self.on_change_window_property)
+        self.transform_input.h_input.text_field.textChanged.connect(self.on_change_window_property)
 
     def on_change_window_property(self, _):
         self.is_saved = False

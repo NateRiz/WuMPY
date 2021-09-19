@@ -40,3 +40,6 @@ py main.py my_workspace
 - Regex search for window names
 - Auto detect windows on screen to create workspace
 - Fix color selector
+- Select window in canvas
+- Drag window in canvas
+- Validators for text fields.
