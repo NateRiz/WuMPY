@@ -42,3 +42,4 @@ py main.py my_workspace
 - Fix color selector
 - Drag window in canvas
 - Validators for text fields.
+- click window in canvas to select
