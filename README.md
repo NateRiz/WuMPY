@@ -33,9 +33,8 @@ py main.py my_workspace
 ```
 
 ## Todo
-- Create a new Virtual Desktop
 - Retries: Auto open window and snap after (wait & retry)
-- Rename Monitors
+- Create a new Virtual Desktop
 - Custom Monitor dimensions
 - Auto detect windows on screen to create workspace
 - Drag window in canvas

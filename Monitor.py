@@ -1,3 +1,5 @@
+from PyQt5.QtCore import Qt
+
 from Window import Window
 from PyQt5.QtWidgets import QTreeWidgetItem
 
@@ -11,6 +13,7 @@ class Monitor(QTreeWidgetItem):
         self.index = index
         self.windows = []
 
+        self.setFlags(self.flags() | Qt.ItemIsEditable)
         self.setText(0, str(self))
         self.setToolTip(0, str(self))
 
