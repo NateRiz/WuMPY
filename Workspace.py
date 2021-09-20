@@ -69,6 +69,7 @@ class Workspace(QWidget):
         self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
         self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
         self.application_parameters.color.text_field.textChanged.connect(self.on_change_window_property)
+        self.application_parameters.enable_regex.check_box.toggled.connect(self.on_change_window_property)
         grid.addWidget(self.application_parameters, 3, 2, 1, 2)
         self.setLayout(grid)
 
@@ -212,6 +213,7 @@ class Workspace(QWidget):
         self.application_parameters.target.text_field.setText(str(window.target))
         self.application_parameters.process.text_field.setText(str(window.process_name))
         self.application_parameters.color.text_field.setText(str(window.color))
+        self.application_parameters.enable_regex.check_box.setChecked(window.is_regex_enabled)
         self.connect_fields()
         self.show_window_properties()
         self.canvas.update()
@@ -227,6 +229,7 @@ class Workspace(QWidget):
         self.application_parameters.target.text_field.textChanged.disconnect()
         self.application_parameters.process.text_field.textChanged.disconnect()
         self.application_parameters.color.text_field.textChanged.disconnect()
+        self.application_parameters.enable_regex.check_box.toggled.disconnect()
         self.monitor_properties.monitor_index.text_field.textChanged.disconnect()
         self.transform_input.x_input.text_field.textChanged.disconnect()
         self.transform_input.y_input.text_field.textChanged.disconnect()
@@ -240,6 +243,7 @@ class Workspace(QWidget):
         :return:
         """
         self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
+        self.application_parameters.enable_regex.check_box.toggled.connect(self.on_change_window_property)
         self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
         self.application_parameters.process.text_field.textChanged.connect(self.on_change_window_property)
         self.application_parameters.color.text_field.textChanged.connect(self.on_change_window_property)
@@ -266,6 +270,7 @@ class Workspace(QWidget):
             process_name = self.application_parameters.process.text
             color = self.application_parameters.color.text
             is_pixel_precision_enabled = self.transform_input.exact_position_toggle.check_box.isChecked()
+            is_regex_enabled = self.application_parameters.enable_regex.check_box.isChecked()
         except ValueError as e:
             print(e)
             return
@@ -279,6 +284,7 @@ class Workspace(QWidget):
         window.process_name = process_name
         window.color = try_parse_color(color)
         window.is_pixel_precision_enabled = is_pixel_precision_enabled
+        window.is_regex_enabled = is_regex_enabled
         self.canvas.update()
 
     def on_change_monitor_property(self, _):

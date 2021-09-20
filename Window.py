@@ -15,6 +15,7 @@ class Window(QTreeWidgetItem):
         self.target = ""
         self.process_name = ""
         self.name = "Window"
+        self.is_regex_enabled = False
         self.setFlags(self.flags() | Qt.ItemIsEditable)
         self.is_pixel_precision_enabled = False
         self.color = (randint(200, 255), randint(200, 255), randint(200, 255))
@@ -22,10 +23,10 @@ class Window(QTreeWidgetItem):
         self.setToolTip(0, self.name)
 
     def serialize(self):
-        return self.name, self.win_x, self.win_y, self.win_z, self.win_w, self.win_h, self.target, self.process_name, self.is_pixel_precision_enabled, self.color
+        return self.name, self.win_x, self.win_y, self.win_z, self.win_w, self.win_h, self.target, self.process_name, self.is_pixel_precision_enabled, self.is_regex_enabled, self.color
 
     def deserialize(self, data):
-        self.name, self.win_x, self.win_y, self.win_z, self.win_w, self.win_h, self.target, self.process_name, self.is_pixel_precision_enabled, self.color = data
+        self.name, self.win_x, self.win_y, self.win_z, self.win_w, self.win_h, self.target, self.process_name, self.is_pixel_precision_enabled, self.is_regex_enabled, self.color = data
         self.setText(0, self.name)
         self.setToolTip(0, self.name)
 

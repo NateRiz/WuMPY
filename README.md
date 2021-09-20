@@ -34,12 +34,10 @@ py main.py my_workspace
 
 ## Todo
 - Create a new Virtual Desktop
-- Auto open window and snap after (wait & retry)
+- Retries: Auto open window and snap after (wait & retry)
 - Rename Monitors
 - Custom Monitor dimensions
-- Regex search for window names
 - Auto detect windows on screen to create workspace
-- Fix color selector
 - Drag window in canvas
 - Validators for text fields.
 - click window in canvas to select

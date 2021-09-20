@@ -10,7 +10,7 @@ class TransformInput(QWidget):
         super().__init__()
         self.v_layout = QVBoxLayout()
 
-        self.exact_position_toggle = TextCheckBox()
+        self.exact_position_toggle = TextCheckBox("Pixel Precision:")
 
         self.x_input = TextInput("X:")
         self.y_input = TextInput("Y:")

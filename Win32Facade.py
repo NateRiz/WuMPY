@@ -1,6 +1,7 @@
 import win32gui
 import win32api
 import subprocess
+import re
 
 
 class Win32Facade:
@@ -22,11 +23,12 @@ class Win32Facade:
 
         for monitor in monitors:
             for window in monitor.windows:
-                if window.process_name in active_windows:
+                hwnd = self.get_hwnd_from_active_windows(window, active_windows)
+                if hwnd:
                     if window.is_pixel_precision_enabled:
-                        self.move_window_absolute(active_windows[window.process_name], window)
+                        self.move_window_absolute(hwnd, window)
                     else:
-                        self.move_window_relative(active_windows[window.process_name], window)
+                        self.move_window_relative(hwnd, window)
                 else:
                     try:
                         subprocess.Popen(window.target)
@@ -37,6 +39,17 @@ class Win32Facade:
         window_text = win32gui.GetWindowText(hwnd).strip()
         if window_text:
             results[window_text] = hwnd
+
+    def get_hwnd_from_active_windows(self, window, active_windows):
+        if window.is_regex_enabled:
+            regex = re.compile(window.process_name)
+            for w, hwnd in active_windows.items():
+                if regex.match(w):
+                    return hwnd
+        elif window.process_name in active_windows:
+            return active_windows[window.process_name]
+
+        return None
 
     def list_windows(self):
         windows = {}

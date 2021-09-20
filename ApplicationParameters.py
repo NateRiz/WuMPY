@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFileDialog, QInputDialog, QColorDialog
 
 from CustomWidgets.DialogTargetInput import DialogTargetInput
+from CustomWidgets.TextCheckBox import TextCheckBox
 from Win32Facade import Win32Facade
 
 
@@ -14,9 +15,12 @@ class ApplicationParameters(QWidget):
         self.target.text_field.setMaximumWidth(256)
         self.v_layout.addWidget(self.target)
 
+        self.enable_regex = TextCheckBox("Regex Search for Window Name:")
+        self.v_layout.addWidget(self.enable_regex)
+
         self.process = DialogTargetInput("Window Name:", "Scan")
         self.process.text_field.setMaximumWidth(256)
-        self.process.button.clicked.connect(lambda: self.process.text_field.setText(QInputDialog.getItem(self, 'Window Names', "Window Names:", self.get_windows().keys())[0]))
+        self.process.button.clicked.connect(self.open_window_scanner)
         self.v_layout.addWidget(self.process)
 
         self.color = DialogTargetInput("Color:", "Choose")
@@ -42,3 +46,9 @@ class ApplicationParameters(QWidget):
 
         # Ignore the Alpha channel
         self.color.text_field.setText(str(color.getRgb()[:-1]))
+
+    def open_window_scanner(self):
+        result, is_success = QInputDialog.getItem(self, 'Window Names', "Window Names:", self.get_windows().keys())
+        if is_success:
+            self.process.text_field.setText(result)
+

@@ -2,9 +2,9 @@ from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QCheckBox, QSizePolicy
 
 
 class TextCheckBox(QWidget):
-    def __init__(self):
+    def __init__(self, text):
         super().__init__()
-        self.label = QLabel(parent=self, text="Pixel Precision:")
+        self.label = QLabel(parent=self, text=text)
         self.check_box = QCheckBox()
         self.h_layout = QHBoxLayout()
         self.setLayout(self.h_layout)
