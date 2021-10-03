@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QMessageBox
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QMessageBox, QShortcut
+from PyQt5.QtGui import QKeySequence
 
 from ApplicationParameters import ApplicationParameters
 from Canvas import Canvas
@@ -21,6 +22,9 @@ class Workspace(QWidget):
         self.is_saved = True
         self.hwnd = hwnd
         self.retry_time = 5
+
+        self.save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        self.save_shortcut.activated.connect(self.save)
 
         grid = QGridLayout()
         grid.setAlignment(Qt.AlignTop)
