@@ -2,6 +2,7 @@ import win32gui
 import win32api
 import subprocess
 import re
+from time import time, sleep
 
 
 class Win32Facade:
@@ -12,7 +13,7 @@ class Win32Facade:
         monitors = win32api.EnumDisplayMonitors()
         return [win32api.GetMonitorInfo(m[0])["Monitor"] for m in monitors]
 
-    def run(self, monitors):
+    def run(self, monitors, retry_time):
         """
         Run the main program. Gui is used mostly for tests.
         :param monitors: [Monitors] in the current workspace
@@ -21,19 +22,46 @@ class Win32Facade:
         active_windows = {}
         win32gui.EnumWindows(self.win_enum_handler, active_windows)
 
+        windows_to_retry = set()
         for monitor in monitors:
+            windows_to_retry.update(set(monitor.windows))
             for window in monitor.windows:
                 hwnd = self.get_hwnd_from_active_windows(window, active_windows)
                 if hwnd:
-                    if window.is_pixel_precision_enabled:
-                        self.move_window_absolute(hwnd, window)
-                    else:
-                        self.move_window_relative(hwnd, window)
+                    windows_to_retry.remove(window)
+                    self.move_window(hwnd, window)
                 else:
                     try:
                         subprocess.Popen(window.target)
                     except Exception as e:
                         print(e)
+        self.wait_and_retry(windows_to_retry, retry_time)
+
+    def move_window(self, hwnd, window):
+        if window.is_pixel_precision_enabled:
+            self.move_window_absolute(hwnd, window)
+        else:
+            self.move_window_relative(hwnd, window)
+
+    def wait_and_retry(self, windows_to_retry, retry_time):
+        WAIT_TIME = 0.25
+        end_time = time() + retry_time
+        while windows_to_retry and time() < end_time:
+            active_windows = {}
+            win32gui.EnumWindows(self.win_enum_handler, active_windows)
+            new_windows_to_retry = set()
+
+            for window in windows_to_retry:
+                hwnd = self.get_hwnd_from_active_windows(window, active_windows)
+                if hwnd:
+                    self.move_window(hwnd, window)
+                else:
+                    new_windows_to_retry.add(window)
+
+            windows_to_retry = new_windows_to_retry
+            sleep(WAIT_TIME)
+
+
 
     def win_enum_handler(self, hwnd, results):
         window_text = win32gui.GetWindowText(hwnd).strip()

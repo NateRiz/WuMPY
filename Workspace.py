@@ -20,6 +20,7 @@ class Workspace(QWidget):
         self.return_to_workspace_selector_callback = return_to_workspace_selector_callback
         self.is_saved = True
         self.hwnd = hwnd
+        self.retry_time = 5
 
         grid = QGridLayout()
         grid.setAlignment(Qt.AlignTop)
@@ -29,6 +30,7 @@ class Workspace(QWidget):
 
         self.monitor_properties = MonitorProperties()
         self.monitor_properties.monitor_index.button.clicked.connect(self.identify_monitor)
+        self.monitor_properties.retry_time.text_field.textChanged.connect(self.on_change_workspace_property)
         self.monitor_properties.add_new_window.clicked.connect(self.add_window_to_monitor)
         self.monitor_properties.delete_window.clicked.connect(self.delete_window)
         self.monitor_properties.run.clicked.connect(self.run)
@@ -225,6 +227,7 @@ class Workspace(QWidget):
         We must disconnect and reconnect all callbacks when loading in text into a text field.
         :return:
         """
+        self.monitor_properties.retry_time.text_field.textChanged.disconnect()
         self.transform_input.exact_position_toggle.check_box.toggled.disconnect()
         self.application_parameters.target.text_field.textChanged.disconnect()
         self.application_parameters.process.text_field.textChanged.disconnect()
@@ -242,6 +245,7 @@ class Workspace(QWidget):
         Reconnect all the fields to their callbacks
         :return:
         """
+        self.monitor_properties.retry_time.text_field.textChanged.connect(self.on_change_workspace_property)
         self.transform_input.exact_position_toggle.check_box.toggled.connect(self.on_toggle_pixel_precision)
         self.application_parameters.enable_regex.check_box.toggled.connect(self.on_change_window_property)
         self.application_parameters.target.text_field.textChanged.connect(self.on_change_window_property)
@@ -300,6 +304,11 @@ class Workspace(QWidget):
             return
         monitor.index = index
 
+    def on_change_workspace_property(self, _):
+        self.is_saved = False
+
+        retry_time = self.monitor_properties.retry_time.text
+        self.retry_time = int(retry_time) if retry_time else 0
 
     def save(self):
         """
@@ -307,14 +316,16 @@ class Workspace(QWidget):
         :return:
         """
         file_handler = FileHandler()
-        file_handler.save(self.workspace_name, self.monitors)
+        file_handler.save(self.workspace_name, self.monitors, self.retry_time)
         self.is_saved = True
 
     def load_workspace(self, filename):
         self.monitors.clear()
         file_handler = FileHandler()
         try:
-            file_handler.load(filename, self.monitors)
+            monitors, self.retry_time = file_handler.load(filename)
+            [self.monitors.append(m) for m in monitors]
+            self.monitor_properties.retry_time.text_field.setText(str(self.retry_time))
         except Exception as e:
             QMessageBox(text=F"Could not load {self.workspace_name}: ({e})", icon=QMessageBox.Critical).exec()
             self.monitors.clear()
@@ -326,6 +337,7 @@ class Workspace(QWidget):
             width = right - left
             height = bottom - top
             self.monitors.append(Monitor(f"Monitor", width, height, i))
+            self.monitor_properties.retry_time.text_field.setText(str(self.retry_time))
 
     def hide_monitor_properties(self):
         self.monitor_properties.monitor_index.setHidden(True)
@@ -377,4 +389,4 @@ class Workspace(QWidget):
 
     def run(self):
         window_manager = Win32Facade()
-        window_manager.run(self.monitors)
+        window_manager.run(self.monitors, self.retry_time)
