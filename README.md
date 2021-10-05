@@ -3,6 +3,7 @@
 WuMPY is a Window Manager created in Python3 for snapping windows and launching preset applications in a workspace. 
 <p align="center">
    <img src="./Preview/WuMPY.png"/>
+   <img src="./Preview/preview.gif"/>
 </p>
 
 ## Instructions
